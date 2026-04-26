@@ -559,25 +559,40 @@ async function loadVideos() {
 function showDemoFeed() {
   const demos = {
     'עולם הרכב': [
-      { id: 'J61MbOdWS6c', title: 'איך עובד מנוע בנזין', channel: 'Engineering Explained' },
-      { id: '4kCYaVbkjaY', title: 'גיר אוטומטי - איך עובד', channel: 'Learn Engineering' },
-      { id: 'pqF-aBtTBnY', title: 'בלמים ומערכת הגרבוש', channel: 'Driving 4 Answers' },
-      { id: '_6I3nOOiMiE', title: 'מנוע חשמלי VS בנזין', channel: 'Real Engineering' },
+      { id: 'ZQUxL4Jm1Lo', title: 'איך עובד מנוע בנזין', channel: 'Engineering Explained' },
+      { id: 'Q3o-0LDKJKE', title: 'איך עובד גיר אוטומטי', channel: 'Learn Engineering' },
+      { id: 'K4bGMvhFCTE', title: 'מנוע חשמלי - איך עובד', channel: 'Real Engineering' },
+      { id: 'ilor5PNMFk0', title: 'מערכת הבלמים ברכב', channel: 'Engineering Explained' },
     ],
     'בישול ומתכונים': [
-      { id: 'ZJy1ajvMU1k', title: 'טכניקות חיתוך בסיסיות', channel: 'Gordon Ramsay' },
-      { id: 'VVnZd8A84z4', title: 'פסטה מאפס - מדריך מלא', channel: 'Italia Squisita' },
-      { id: 'o18UZpyAeKo', title: 'בישול ביצים - כל הדרכים', channel: 'Joshua Weissman' },
+      { id: 'zHjdBkI4Dr4', title: 'בישול ביצים - כל הדרכים', channel: 'Joshua Weissman' },
+      { id: 'FLd00Bx4tOk', title: 'טכניקות בישול בסיסיות', channel: 'Ethan Chlebowski' },
+      { id: 'zHjdBkI4Dr4', title: 'פסטה מאפס', channel: 'Italia Squisita' },
     ],
     'פיתוח תוכנה': [
-      { id: 'zOjov-2OZ0E', title: 'HTML בשעה אחת', channel: 'Traversy Media' },
-      { id: 'W6NZfCO5SIk', title: 'JavaScript למתחילים', channel: 'Programming with Mosh' },
-      { id: 'rfscVS0vtbw', title: 'Python - מדריך מלא', channel: 'freeCodeCamp' },
+      { id: 'PlxWf493en4', title: 'HTML ו-CSS למתחילים', channel: 'freeCodeCamp' },
+      { id: 'PkZNo7MFNFg', title: 'JavaScript - קורס מלא', channel: 'freeCodeCamp' },
+      { id: 'eWRfhZUzrAc', title: 'Python למתחילים', channel: 'CS Dojo' },
+    ],
+    'ספורט וכושר': [
+      { id: 'IODxDxX7oi4', title: 'כושר לגוף מלא ללא ציוד', channel: 'FitnessBlender' },
+      { id: 'vc1E5CfRfos', title: 'שגרת בוקר לכושר', channel: 'Athlean-X' },
+      { id: 'qv0HkUOEMoQ', title: 'כיצד לבנות שריר', channel: 'Jeff Nippard' },
+    ],
+    'מדע וטכנולוגיה': [
+      { id: 'X9ryNX-Ogrw', title: 'כיצד עובד הבינה המלאכותית', channel: 'Kurzgesagt' },
+      { id: 'GVsUOuSjvcg', title: 'הסבר על קוונטום', channel: 'Kurzgesagt' },
+      { id: 'Be-UNOmGSo0', title: 'עתיד הטכנולוגיה', channel: 'Veritasium' },
+    ],
+    'עסקים ויזמות': [
+      { id: 'ZoqgAy3h4OM', title: 'איך להקים עסק מאפס', channel: 'Y Combinator' },
+      { id: 'sM2UJigjcvg', title: 'כיצד לחשוב כמו יזם', channel: 'Simon Sinek' },
+      { id: 'LJ9V4-6T9To', title: 'מיומנויות עסקיות חשובות', channel: 'Patrick Bet-David' },
     ],
     default: [
-      { id: 'rfscVS0vtbw', title: 'איך ללמוד כל דבר מהר', channel: 'Thomas Frank' },
-      { id: 'ukLnPbIffxE', title: 'שיטות ללמידה טובה יותר', channel: 'Ali Abdaal' },
-      { id: 'LqKpbe3LZ68', title: 'מדריך ללמידה אפקטיבית', channel: 'Mike and Matty' },
+      { id: 'X9ryNX-Ogrw', title: 'כיצד עובד הבינה המלאכותית', channel: 'Kurzgesagt' },
+      { id: 'ZoqgAy3h4OM', title: 'איך להקים עסק מאפס', channel: 'Y Combinator' },
+      { id: 'PkZNo7MFNFg', title: 'JavaScript - קורס מלא', channel: 'freeCodeCamp' },
     ]
   };
   const list = demos[selectedTopic] || demos['default'];
