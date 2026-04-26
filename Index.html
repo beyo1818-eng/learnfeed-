@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LearnFeed — למד תוך כדי גלילה</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+–bg: #0a0a0f;
+–surface: #12121a;
+–card: #1a1a26;
+–accent: #6c63ff;
+–accent2: #ff6584;
+–text: #f0f0ff;
+–muted: #8888aa;
+–border: rgba(108,99,255,0.2);
+}
+
+body {
+font-family: ‘Heebo’, sans-serif;
+background: var(–bg);
+color: var(–text);
+min-height: 100vh;
+overflow-x: hidden;
+}
+
+/* SPLASH SCREEN */
+#splash {
+position: fixed; inset: 0;
+background: var(–bg);
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+z-index: 1000;
+transition: opacity 0.5s, transform 0.5s;
+}
+
+#splash .logo {
+font-size: 3rem;
+font-weight: 900;
+background: linear-gradient(135deg, var(–accent), var(–accent2));
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
+margin-bottom: 0.5rem;
+}
+
+#splash .tagline {
+color: var(–muted);
+font-size: 1rem;
+margin-bottom: 3rem;
+}
+
+#splash .topics-grid {
+display: grid;
+grid-template-columns: repeat(3, 1fr);
+gap: 0.75rem;
+width: 320px;
+margin-bottom: 2rem;
+}
+
+.topic-btn {
+background: var(–card);
+border: 2px solid var(–border);
+border-radius: 16px;
+padding: 1rem 0.5rem;
+text-align: center;
+cursor: pointer;
+transition: all 0.2s;
+color: var(–text);
+font-family: ‘Heebo’, sans-serif;
+font-size: 0.85rem;
+font-weight: 600;
+}
+
+.topic-btn .emoji { font-size: 1.5rem; display: block; margin-bottom: 0.3rem; }
+
+.topic-btn:hover, .topic-btn.selected {
+border-color: var(–accent);
+background: rgba(108,99,255,0.15);
+transform: scale(1.05);
+}
+
+.start-btn {
+background: linear-gradient(135deg, var(–accent), var(–accent2));
+border: none;
+border-radius: 50px;
+padding: 1rem 3rem;
+font-family: ‘Heebo’, sans-serif;
+font-size: 1.1rem;
+font-weight: 800;
+color: white;
+cursor: pointer;
+transition: all 0.2s;
+opacity: 0.4;
+pointer-events: none;
+}
+
+.start-btn.active {
+opacity: 1;
+pointer-events: all;
+box-shadow: 0 8px 30px rgba(108,99,255,0.4);
+}
+
+.start-btn.active:hover { transform: scale(1.05); }
+
+/* MAIN APP */
+#app { display: none; height: 100vh; flex-direction: column; }
+
+/* TOP BAR */
+.topbar {
+padding: 1rem 1.2rem 0.75rem;
+display: flex;
+align-items: center;
+justify-content: space-between;
+background: var(–bg);
+border-bottom: 1px solid var(–border);
+position: sticky; top: 0; z-index: 100;
+}
+
+.topbar .logo-small {
+font-size: 1.4rem;
+font-weight: 900;
+background: linear-gradient(135deg, var(–accent), var(–accent2));
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
+}
+
+.topic-tag {
+background: rgba(108,99,255,0.2);
+border: 1px solid var(–accent);
+border-radius: 20px;
+padding: 0.3rem 1rem;
+font-size: 0.85rem;
+color: var(–accent);
+font-weight: 600;
+cursor: pointer;
+transition: all 0.2s;
+}
+
+.topic-tag:hover { background: rgba(108,99,255,0.3); }
+
+/* FEED */
+#feed {
+flex: 1;
+overflow-y: auto;
+scroll-snap-type: y mandatory;
+scroll-behavior: smooth;
+}
+
+#feed::-webkit-scrollbar { display: none; }
+
+.video-card {
+height: 100vh;
+scroll-snap-align: start;
+display: flex;
+flex-direction: column;
+position: relative;
+background: var(–bg);
+}
+
+.video-wrapper {
+flex: 1;
+position: relative;
+background: #000;
+overflow: hidden;
+}
+
+.video-wrapper iframe {
+width: 100%;
+height: 100%;
+border: none;
+display: block;
+}
+
+/* Overlay gradient at bottom */
+.video-overlay {
+position: absolute;
+bottom: 0; left: 0; right: 0;
+height: 200px;
+background: linear-gradient(transparent, rgba(10,10,15,0.95));
+pointer-events: none;
+}
+
+/* Video info */
+.video-info {
+position: absolute;
+bottom: 80px;
+right: 1rem;
+left: 4rem;
+z-index: 10;
+}
+
+.channel-name {
+font-size: 0.8rem;
+color: var(–accent);
+font-weight: 700;
+margin-bottom: 0.3rem;
+}
+
+.video-title {
+font-size: 0.95rem;
+font-weight: 600;
+line-height: 1.4;
+color: var(–text);
+display: -webkit-box;
+-webkit-line-clamp: 2;
+-webkit-box-orient: vertical;
+overflow: hidden;
+}
+
+/* Side actions */
+.side-actions {
+position: absolute;
+bottom: 80px;
+left: 0.8rem;
+display: flex;
+flex-direction: column;
+gap: 1.2rem;
+align-items: center;
+z-index: 10;
+}
+
+.action-btn {
+display: flex;
+flex-direction: column;
+align-items: center;
+gap: 0.2rem;
+cursor: pointer;
+transition: transform 0.2s;
+}
+
+.action-btn:hover { transform: scale(1.1); }
+
+.action-btn .icon {
+width: 44px; height: 44px;
+background: rgba(255,255,255,0.1);
+backdrop-filter: blur(10px);
+border-radius: 50%;
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 1.2rem;
+border: 1px solid rgba(255,255,255,0.1);
+transition: all 0.2s;
+}
+
+.action-btn:hover .icon { background: rgba(108,99,255,0.3); border-color: var(–accent); }
+.action-btn.liked .icon { background: rgba(255,101,132,0.3); border-color: var(–accent2); }
+
+.action-btn .label {
+font-size: 0.65rem;
+color: var(–muted);
+font-weight: 600;
+}
+
+/* Bottom nav */
+.bottom-nav {
+position: fixed;
+bottom: 0; left: 0; right: 0;
+background: rgba(10,10,15,0.95);
+backdrop-filter: blur(20px);
+border-top: 1px solid var(–border);
+display: flex;
+padding: 0.5rem 0 0.8rem;
+z-index: 200;
+}
+
+.nav-item {
+flex: 1;
+display: flex;
+flex-direction: column;
+align-items: center;
+gap: 0.2rem;
+cursor: pointer;
+padding: 0.4rem;
+transition: all 0.2s;
+}
+
+.nav-item .nav-icon { font-size: 1.4rem; }
+.nav-item .nav-label { font-size: 0.65rem; color: var(–muted); font-weight: 600; }
+.nav-item.active .nav-label { color: var(–accent); }
+
+/* Loading state */
+.loading-card {
+height: 100vh;
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+gap: 1rem;
+}
+
+.spinner {
+width: 50px; height: 50px;
+border: 3px solid var(–border);
+border-top-color: var(–accent);
+border-radius: 50%;
+animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.loading-text { color: var(–muted); font-size: 0.9rem; }
+
+/* Progress dots */
+.progress-bar {
+position: absolute;
+bottom: 60px;
+right: 1rem;
+display: flex;
+gap: 4px;
+z-index: 10;
+}
+
+.progress-dot {
+width: 4px; height: 4px;
+border-radius: 50%;
+background: rgba(255,255,255,0.2);
+transition: all 0.3s;
+}
+
+.progress-dot.active {
+background: var(–accent);
+width: 16px;
+border-radius: 2px;
+}
+
+/* Custom topic input */
+.custom-input-wrap {
+grid-column: 1 / -1;
+display: flex;
+gap: 0.5rem;
+margin-top: 0.25rem;
+}
+
+.custom-input {
+flex: 1;
+background: var(–card);
+border: 2px solid var(–border);
+border-radius: 12px;
+padding: 0.7rem 1rem;
+color: var(–text);
+font-family: ‘Heebo’, sans-serif;
+font-size: 0.9rem;
+outline: none;
+transition: border-color 0.2s;
+}
+
+.custom-input:focus { border-color: var(–accent); }
+.custom-input::placeholder { color: var(–muted); }
+
+.custom-submit {
+background: var(–accent);
+border: none;
+border-radius: 12px;
+padding: 0.7rem 1rem;
+color: white;
+font-family: ‘Heebo’, sans-serif;
+font-weight: 700;
+cursor: pointer;
+font-size: 0.9rem;
+transition: all 0.2s;
+}
+
+.custom-submit:hover { background: #7c73ff; }
+
+/* Snack notification */
+.snack {
+position: fixed;
+bottom: 80px;
+left: 50%;
+transform: translateX(-50%) translateY(100px);
+background: var(–accent);
+color: white;
+padding: 0.6rem 1.5rem;
+border-radius: 50px;
+font-size: 0.85rem;
+font-weight: 600;
+z-index: 300;
+transition: transform 0.3s;
+white-space: nowrap;
+}
+
+.snack.show { transform: translateX(-50%) translateY(0); }
+
+@keyframes fadeIn {
+from { opacity: 0; transform: translateY(20px); }
+to { opacity: 1; transform: translateY(0); }
+}
+
+.video-card { animation: fadeIn 0.4s ease; }
+</style>
+
+</head>
+<body>
+
+<!-- SPLASH -->
+
+<div id="splash">
+  <div class="logo">LearnFeed</div>
+  <div class="tagline">בחר נושא, התחל ללמוד 🎓</div>
+
+  <div class="topics-grid">
+    <button class="topic-btn" onclick="selectTopic(this, 'עולם הרכב')">
+      <span class="emoji">🚗</span>רכב
+    </button>
+    <button class="topic-btn" onclick="selectTopic(this, 'בישול ומתכונים')">
+      <span class="emoji">🍳</span>בישול
+    </button>
+    <button class="topic-btn" onclick="selectTopic(this, 'פיתוח תוכנה')">
+      <span class="emoji">💻</span>קוד
+    </button>
+    <button class="topic-btn" onclick="selectTopic(this, 'ספורט וכושר')">
+      <span class="emoji">💪</span>כושר
+    </button>
+    <button class="topic-btn" onclick="selectTopic(this, 'מדע וטכנולוגיה')">
+      <span class="emoji">🔬</span>מדע
+    </button>
+    <button class="topic-btn" onclick="selectTopic(this, 'עסקים ויזמות')">
+      <span class="emoji">💡</span>עסקים
+    </button>
+    <div class="custom-input-wrap">
+      <input class="custom-input" id="customTopic" placeholder="נושא אחר..." />
+      <button class="custom-submit" onclick="setCustomTopic()">→</button>
+    </div>
+  </div>
+
+<button class="start-btn" id="startBtn" onclick="startApp()">התחל ללמוד ▶</button>
+
+</div>
+
+<!-- SNACK -->
+
+<div class="snack" id="snack"></div>
+
+<!-- MAIN APP -->
+
+<div id="app">
+  <div class="topbar">
+    <div class="logo-small">LearnFeed</div>
+    <div class="topic-tag" id="currentTopicTag" onclick="goBack()">✏️ החלף נושא</div>
+  </div>
+
+  <div id="feed">
+    <div class="loading-card">
+      <div class="spinner"></div>
+      <div class="loading-text">טוען סרטונים...</div>
+    </div>
+  </div>
+
+  <div class="bottom-nav">
+    <div class="nav-item active">
+      <span class="nav-icon">🏠</span>
+      <span class="nav-label">פיד</span>
+    </div>
+    <div class="nav-item">
+      <span class="nav-icon">🔍</span>
+      <span class="nav-label">חיפוש</span>
+    </div>
+    <div class="nav-item">
+      <span class="nav-icon">❤️</span>
+      <span class="nav-label">שמורים</span>
+    </div>
+    <div class="nav-item">
+      <span class="nav-icon">👤</span>
+      <span class="nav-label">פרופיל</span>
+    </div>
+  </div>
+</div>
+
+<script>
+const API_KEY = 'AIzaSyDNpTCEQySgsk3Vt1AhFtePg7nbYT2dWGo';
+let selectedTopic = '';
+let videos = [];
+let liked = new Set();
+let saved = new Set();
+let currentIndex = 0;
+
+function selectTopic(btn, topic) {
+  document.querySelectorAll('.topic-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedTopic = topic;
+  document.getElementById('customTopic').value = '';
+  document.getElementById('startBtn').classList.add('active');
+}
+
+function setCustomTopic() {
+  const val = document.getElementById('customTopic').value.trim();
+  if (!val) return;
+  document.querySelectorAll('.topic-btn').forEach(b => b.classList.remove('selected'));
+  selectedTopic = val;
+  document.getElementById('startBtn').classList.add('active');
+  showSnack(`נושא: "${val}" נבחר ✓`);
+}
+
+document.getElementById('customTopic').addEventListener('keydown', e => {
+  if (e.key === 'Enter') setCustomTopic();
+});
+
+function startApp() {
+  if (!selectedTopic) return;
+  document.getElementById('splash').style.opacity = '0';
+  document.getElementById('splash').style.transform = 'scale(0.95)';
+  setTimeout(() => {
+    document.getElementById('splash').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+    document.getElementById('currentTopicTag').textContent = `✏️ ${selectedTopic}`;
+    loadVideos();
+  }, 400);
+}
+
+function goBack() {
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('splash').style.display = 'flex';
+  document.getElementById('splash').style.opacity = '1';
+  document.getElementById('splash').style.transform = 'scale(1)';
+  document.getElementById('feed').innerHTML = '<div class="loading-card"><div class="spinner"></div><div class="loading-text">טוען סרטונים...</div></div>';
+  videos = [];
+}
+
+async function loadVideos() {
+  const feed = document.getElementById('feed');
+  try {
+    const instances = [
+      'https://inv.nadeko.net',
+      'https://invidious.nerdvpn.de',
+      'https://invidious.privacydev.net'
+    ];
+    const query = encodeURIComponent(selectedTopic);
+    let data = null;
+    for (const instance of instances) {
+      try {
+        const url = `${instance}/api/v1/search?q=${query}&type=video&page=1`;
+        const res = await fetch(url, { signal: AbortSignal.timeout(6000) });
+        if (res.ok) {
+          data = await res.json();
+          if (Array.isArray(data) && data.length > 0) break;
+        }
+      } catch (e) { continue; }
+    }
+    if (!data || !Array.isArray(data) || data.length === 0) { showDemoFeed(); return; }
+    videos = data.filter(v => v.videoId).slice(0, 12).map(v => ({
+      id: { videoId: v.videoId },
+      snippet: { title: v.title, channelTitle: v.author || 'יוטיוב' }
+    }));
+    if (videos.length === 0) { showDemoFeed(); return; }
+    renderFeed();
+  } catch (err) {
+    console.error('Fetch error:', err);
+    showDemoFeed();
+  }
+}
+
+function showDemoFeed() {
+  const demos = {
+    'עולם הרכב': [
+      { id: 'J61MbOdWS6c', title: 'איך עובד מנוע בנזין', channel: 'Engineering Explained' },
+      { id: '4kCYaVbkjaY', title: 'גיר אוטומטי - איך עובד', channel: 'Learn Engineering' },
+      { id: 'pqF-aBtTBnY', title: 'בלמים ומערכת הגרבוש', channel: 'Driving 4 Answers' },
+      { id: '_6I3nOOiMiE', title: 'מנוע חשמלי VS בנזין', channel: 'Real Engineering' },
+    ],
+    'בישול ומתכונים': [
+      { id: 'ZJy1ajvMU1k', title: 'טכניקות חיתוך בסיסיות', channel: 'Gordon Ramsay' },
+      { id: 'VVnZd8A84z4', title: 'פסטה מאפס - מדריך מלא', channel: 'Italia Squisita' },
+      { id: 'o18UZpyAeKo', title: 'בישול ביצים - כל הדרכים', channel: 'Joshua Weissman' },
+    ],
+    'פיתוח תוכנה': [
+      { id: 'zOjov-2OZ0E', title: 'HTML בשעה אחת', channel: 'Traversy Media' },
+      { id: 'W6NZfCO5SIk', title: 'JavaScript למתחילים', channel: 'Programming with Mosh' },
+      { id: 'rfscVS0vtbw', title: 'Python - מדריך מלא', channel: 'freeCodeCamp' },
+    ],
+    default: [
+      { id: 'rfscVS0vtbw', title: 'איך ללמוד כל דבר מהר', channel: 'Thomas Frank' },
+      { id: 'ukLnPbIffxE', title: 'שיטות ללמידה טובה יותר', channel: 'Ali Abdaal' },
+      { id: 'LqKpbe3LZ68', title: 'מדריך ללמידה אפקטיבית', channel: 'Mike and Matty' },
+    ]
+  };
+  const list = demos[selectedTopic] || demos['default'];
+  videos = list.map(v => ({
+    id: { videoId: v.id },
+    snippet: { title: v.title, channelTitle: v.channel }
+  }));
+  renderFeed();
+}
+
+function renderFeed() {
+  const feed = document.getElementById('feed');
+  feed.innerHTML = '';
+
+  videos.forEach((video, i) => {
+    const id = video.id.videoId;
+    const title = video.snippet.title;
+    const channel = video.snippet.channelTitle;
+
+    const card = document.createElement('div');
+    card.className = 'video-card';
+    card.innerHTML = `
+      <div class="video-wrapper">
+        <iframe
+          src="https://www.youtube.com/embed/${id}?autoplay=0&rel=0&modestbranding=1&enablejsapi=1"
+          allowfullscreen
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          loading="lazy">
+        </iframe>
+        <div class="video-overlay"></div>
+
+        <div class="video-info">
+          <div class="channel-name">📺 ${channel}</div>
+          <div class="video-title">${title}</div>
+        </div>
+
+        <div class="side-actions">
+          <div class="action-btn" onclick="toggleLike(this, '${id}')">
+            <div class="icon">❤️</div>
+            <div class="label">אהבתי</div>
+          </div>
+          <div class="action-btn" onclick="toggleSave(this, '${id}')">
+            <div class="icon">🔖</div>
+            <div class="label">שמור</div>
+          </div>
+          <div class="action-btn" onclick="openYT('${id}')">
+            <div class="icon">▶️</div>
+            <div class="label">יוטיוב</div>
+          </div>
+          <div class="action-btn" onclick="shareVideo('${title}', '${id}')">
+            <div class="icon">📤</div>
+            <div class="label">שתף</div>
+          </div>
+        </div>
+
+        <div class="progress-bar">
+          ${videos.map((_, j) => `<div class="progress-dot ${j===i?'active':''}"></div>`).join('')}
+        </div>
+      </div>
+    `;
+
+    feed.appendChild(card);
+  });
+
+  // Update progress dots on scroll
+  feed.addEventListener('scroll', () => {
+    const idx = Math.round(feed.scrollTop / window.innerHeight);
+    document.querySelectorAll('.progress-dot').forEach((dot, i) => {
+      dot.classList.toggle('active', i === idx % videos.length);
+    });
+  });
+}
+
+function toggleLike(btn, id) {
+  if (liked.has(id)) {
+    liked.delete(id);
+    btn.classList.remove('liked');
+    btn.querySelector('.icon').textContent = '❤️';
+  } else {
+    liked.add(id);
+    btn.classList.add('liked');
+    btn.querySelector('.icon').textContent = '❤️';
+    showSnack('נוסף למועדפים ❤️');
+  }
+}
+
+function toggleSave(btn, id) {
+  if (saved.has(id)) {
+    saved.delete(id);
+    btn.querySelector('.icon').textContent = '🔖';
+    showSnack('הוסר מהשמורים');
+  } else {
+    saved.add(id);
+    btn.querySelector('.icon').textContent = '✅';
+    showSnack('נשמר בהצלחה 🔖');
+  }
+}
+
+function openYT(id) {
+  window.open(`https://www.youtube.com/watch?v=${id}`, '_blank');
+}
+
+function shareVideo(title, id) {
+  const url = `https://www.youtube.com/watch?v=${id}`;
+  if (navigator.share) {
+    navigator.share({ title, url });
+  } else {
+    navigator.clipboard.writeText(url);
+    showSnack('לינק הועתק! 📋');
+  }
+}
+
+function showSnack(msg) {
+  const snack = document.getElementById('snack');
+  snack.textContent = msg;
+  snack.classList.add('show');
+  setTimeout(() => snack.classList.remove('show'), 2500);
+}
+</script>
+
+</body>
+</html>
